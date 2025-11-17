@@ -1,55 +1,279 @@
 #include <iostream>
+#include <string>
 using namespace std;
 
+struct Anggota {
+    string id_anggota; 
+    string kode_anggota;
+    string nama;
+    string alamat;
+    string email;
+    int status;
+};
+
 struct Buku {
-    char id_buku[10];
-    char isbn[20];
-    char judul[50];
-    char pengarang[30];
-    char penerbit[30];
+    string id_buku;
+    string isbn;
+    string judul;
+    string pengarang;
+    string penerbit;
     int tahun_terbit;
     int stok;
 };
 
-Buku data_buku[50]; 
-int jumlah_buku = 0;
+struct Peminjaman {
+    string id_peminjaman;
+    string id_anggota;
+    string id_buku;
+    string tanggal_pinjam;
+    string tanggal_kembali;
+    int status;
+    int denda;
+};
+
+struct Petugas {
+    string id_petugas;
+    string username;
+    string password;
+    string nama;
+};
+
+Anggota dataanggota[50];
+Buku databuku[100];
+Petugas datapetugas[5];
+
+int jumlahanggota = 0;
+int jumlahbuku = 0;
+int jumlahpetugas = 0;
+int jumlahpeminjaman = 0;
+
+void menuUtama();
+void menuAnggota();
+void menuBuku();
 
 
-void tambahBuku() {
-    cout << "\n=== Tambah Buku ===\n";
-    cout << "ID Buku       : ";
-    cin >> data_buku[jumlah_buku].id_buku;
-    cout << "ISBN          : ";
-    cin >> data_buku[jumlah_buku].isbn;
-    cout << "Judul         : ";
-    cin.ignore(); // biar bisa input spasi di judul
-    cin.getline(data_buku[jumlah_buku].judul, 50);
-    cout << "Pengarang     : ";
-    cin.getline(data_buku[jumlah_buku].pengarang, 30);
-    cout << "Penerbit      : ";
-    cin.getline(data_buku[jumlah_buku].penerbit, 30);
-    cout << "Tahun Terbit  : ";
-    cin >> data_buku[jumlah_buku].tahun_terbit;
-    cout << "Stok          : ";
-    cin >> data_buku[jumlah_buku].stok;
+// ============ PETUGAS ============
 
-    jumlah_buku++;
-    cout << ">> Buku berhasil ditambahkan!\n";
+void tambahPetugas() {
+    datapetugas[0].id_petugas = "000001";
+    datapetugas[0].username = "admin";
+    datapetugas[0].password = "admin123";
+    datapetugas[0].nama = "Petugas Utama";
+    jumlahpetugas = 1;
 }
 
-void tampilBuku() {
-    cout << "\n=== Daftar Buku ===\n";
-    if (jumlah_buku == 0) {
-        cout << "(Belum ada data buku)\n";
-    } else {
-        for (int i = 0; i < jumlah_buku; i++) {
-            cout << i + 1 << ". " << data_buku[i].judul
-                 << " | ISBN: " << data_buku[i].isbn
-                 << " | Stok: " << data_buku[i].stok << endl;
+bool loginPetugas() {
+    string u, p;
+
+    cout << "\n--- LOGIN PETUGAS \n";
+    cout << "Username : ";
+    cin >> u;
+    cout << "Password : ";
+    cin >> p;
+
+    for (int i = 0; i < jumlahpetugas; i++) {
+        if (u == datapetugas[i].username && p == datapetugas[i].password) {
+            cout << "\nLogin berhasil. Selamat datang! " 
+                 << datapetugas[i].nama << "!\n";
+            return true;
         }
     }
 
+    cout << "\nLogin gagal! Username atau password salah.\n";
+    return false;
+}
 
 
-    return ;
+// ============ ANGGOTA ============
+
+string generateKodeAnggota(string tahun, string bulan, string tanggal) {
+    string dasar = tahun + bulan + tanggal;
+
+    int hitung = 0;
+
+    for (int i = 0; i < jumlahanggota; i++) {
+        if (dataanggota[i].id_anggota.substr(0, 8) == dasar) {
+            hitung++;
+        }
+    }
+
+    hitung++;
+
+    string urut = "";
+    if (hitung < 10) urut = "00" + to_string(hitung);
+    else if (hitung < 100) urut = "0" + to_string(hitung);
+    else urut = to_string(hitung);
+
+    return dasar + urut;
+}
+
+
+void tambahAnggota() {
+    cout << "\n--- TAMBAH ANGGOTA ---\n";
+
+    Anggota a;
+    cin.ignore();
+
+    cout << "Nama   : ";
+    getline(cin, a.nama);
+
+    cout << "Alamat : ";
+    getline(cin, a.alamat);
+
+    cout << "Email  : ";
+    getline(cin, a.email);
+
+    string tahun, bulan, tanggal;
+    cout << "Tahun Lahir (YYYY): ";
+    cin >> tahun;
+    cout << "Bulan Lahir (MM): ";
+    cin >> bulan;
+    cout << "Tanggal Lahir (DD): ";
+    cin >> tanggal;
+
+    a.id_anggota = generateKodeAnggota(tahun, bulan, tanggal);
+    a.kode_anggota = a.id_anggota;
+    a.status = 1;
+
+    dataanggota[jumlahanggota] = a;
+    jumlahanggota++;
+
+    cout << "\nAnggota berhasil ditambahkan!\n";
+    cout << "Kode Anggota: " << a.kode_anggota << endl;
+}
+
+
+void lihatAnggota() {
+    cout << "\n=== DATA ANGGOTA ===\n";
+
+    if (jumlahanggota == 0) {
+        cout << "Belum ada data anggota.\n";
+        return;
+    }
+
+    for (int i = 0; i < jumlahanggota; i++) {
+        cout << i + 1 << ". " << dataanggota[i].nama << endl;
+        cout << "   ID     : " << dataanggota[i].id_anggota << endl;
+        cout << "   Alamat : " << dataanggota[i].alamat << endl;
+        cout << "   Email  : " << dataanggota[i].email << endl;
+        cout << "   Status : " << (dataanggota[i].status == 1 ? "Aktif" : "Nonaktif") << endl;
+        cout << "-----------------------------------\n";
+    }
+}
+
+void menuAnggota() {
+    int pilih;
+    do {
+        cout << "\n=== MENU ANGGOTA ===\n";
+        cout << "1. Tambah Anggota\n";
+        cout << "2. Lihat Anggota\n";
+        cout << "3. Kembali\n";
+        cout << "Pilih: ";
+        cin >> pilih;
+
+        if (pilih == 1) tambahAnggota();
+        else if (pilih == 2) lihatAnggota();
+
+    } while (pilih != 3);
+}
+
+
+// ============ BUKU ============
+
+string generateIdBuku() {
+    int urut = jumlahbuku + 1;
+    string id = "BK";
+    if (urut < 10) id += "00" + to_string(urut);
+    else if (urut < 100) id += "0" + to_string(urut);
+    else id += to_string(urut);
+    return id;
+}
+
+void tambahBuku() {
+    cout << "\nTambah Buku\n";
+
+    cin.ignore();
+    databuku[jumlahbuku].id_buku = generateIdBuku();
+
+    cout << "ISBN: ";
+    getline(cin, databuku[jumlahbuku].isbn);
+
+    cout << "Judul: ";
+    getline(cin, databuku[jumlahbuku].judul);
+
+    cout << "Pengarang: ";
+    getline(cin, databuku[jumlahbuku].pengarang);
+
+    cout << "Penerbit: ";
+    getline(cin, databuku[jumlahbuku].penerbit);
+
+    cout << "Tahun terbit: ";
+    cin >> databuku[jumlahbuku].tahun_terbit;
+
+    cout << "Stok: ";
+    cin >> databuku[jumlahbuku].stok;
+
+    jumlahbuku++;
+    cout << "Buku berhasil ditambahkan.\n";
+}
+
+void lihatBuku() {
+    cout << "\n=== DATA BUKU ===\n";
+
+    if (jumlahbuku == 0) {
+        cout << "Belum ada data buku.\n";
+        return;
+    }
+
+    for (int i = 0; i < jumlahbuku; i++) {
+        cout << databuku[i].id_buku << " - " << databuku[i].judul << endl;
+    }
+}
+
+void menuBuku() {
+    int pilih;
+    do {
+        cout << "\n=== MENU BUKU ===\n";
+        cout << "1. Tambah Buku\n";
+        cout << "2. Lihat Buku\n";
+        cout << "3. Kembali\n";
+        cout << "Pilih: ";
+        cin >> pilih;
+
+        if (pilih == 1) tambahBuku();
+        else if (pilih == 2) lihatBuku();
+
+    } while (pilih != 3);
+}
+
+// ============ MENU UTAMA ============
+
+void menuUtama() {
+    int pilih;
+    do {
+        cout << "\n=== MENU UTAMA ===\n";
+        cout << "1. Menu Anggota\n";
+        cout << "2. Menu Buku\n";
+        cout << "3. Menu Peminjaman\n";
+        cout << "4. Keluar\n";
+        cout << "Pilih: ";
+        cin >> pilih;
+
+        if (pilih == 1) menuAnggota();
+        else if (pilih == 2) menuBuku();
+        else if (pilih == 4) break;
+
+    } while (true);
+}
+
+// ============ MAIN ============
+
+int main() {
+    tambahPetugas();
+
+    if (loginPetugas()) {
+        menuUtama();
+    }
+
+    return 0;
 }
