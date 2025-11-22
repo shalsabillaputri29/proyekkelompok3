@@ -144,22 +144,6 @@ void tambahAnggota() {
     cout << "Kode Anggota: " << a.kode_anggota << endl;
 }
 
-void tampilAnggotaAscending() {
-    for (int i = 0; i < jumlahanggota - 1; i++) {
-        for (int j = i + 1; j < jumlahanggota; j++) {
-            if (dataanggota[i].nama > dataanggota[j].nama) {
-                Anggota temp = dataanggota[i];
-                dataanggota[i] = dataanggota[j];
-                dataanggota[j] = temp;
-            }
-        }
-    }
-
-    for (int i = 0; i < jumlahanggota; i++) {
-        cout << dataanggota[i].kode_anggota << " - " << dataanggota[i].nama << endl;
-    }
-}
-
 void lihatAnggota() {
     cout << "\n=== DATA ANGGOTA ===\n";
 
@@ -222,23 +206,6 @@ string generateIdBuku() {
     return id;
 }
 
-
-void tampilBukuAscending() {
-    for (int i = 0; i < jumlahbuku - 1; i++) {
-        for (int j = i + 1; j < jumlahbuku; j++) {
-            if (databuku[i].judul > databuku[j].judul) {
-                Buku temp = databuku[i];
-                databuku[i] = databuku[j];
-                databuku[j] = temp;
-            }
-        }
-    }
-
-    for (int i = 0; i < jumlahbuku; i++) {
-        cout << databuku[i].id_buku << " - " << databuku[i].judul << " - " 
-             << databuku[i].pengarang << " - " << databuku[i].stok << endl;
-    }
-}
 
 void tambahBuku() {
     cout << "\nTambah Buku\n";
@@ -314,6 +281,37 @@ void lihatBuku() {
     }
 }
 
+void cariBuku() {
+    cout << "\nCari Buku\n";
+    cin.ignore();
+
+    string keyword;
+    cout << "Masukkan judul / ISBN / ID Buku yang dicari: ";
+    getline(cin, keyword);
+
+    bool found = false;
+
+    for (int i = 0; i < jumlahbuku; i++) {
+        if (databuku[i].judul == keyword ||
+            databuku[i].isbn == keyword ||
+            databuku[i].id_buku == keyword)
+        {
+            cout << "\n=== DATA BUKU DITEMUKAN ===\n";
+            cout << "ID Buku      : " << databuku[i].id_buku << endl;
+            cout << "ISBN         : " << databuku[i].isbn << endl;
+            cout << "Judul        : " << databuku[i].judul << endl;
+            cout << "Pengarang    : " << databuku[i].pengarang << endl;
+            cout << "Penerbit     : " << databuku[i].penerbit << endl;
+            cout << "Tahun Terbit : " << databuku[i].tahun_terbit << endl;
+            cout << "Stok         : " << databuku[i].stok << endl;
+            found = true;
+        }
+    }
+
+    if (!found) {
+        cout << "Buku tidak ditemukan.\n";
+    }
+}
 
 
 
@@ -323,12 +321,14 @@ void menuBuku() {
         cout << "\n=== MENU BUKU ===\n";
         cout << "1. Tambah Buku\n";
         cout << "2. Lihat Buku\n";
-        cout << "3. Kembali\n";
+        cout << "3. Cari Buku\n";
+        cout << "4. Kembali\n";
         cout << "Pilih: ";
         cin >> pilih;
 
         if (pilih == 1) tambahBuku();
         else if (pilih == 2) lihatBuku();
+        else if (pilih == 3) cariBuku();
 
     } while (pilih != 3);
 }
