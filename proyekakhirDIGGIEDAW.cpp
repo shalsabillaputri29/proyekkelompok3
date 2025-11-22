@@ -338,7 +338,6 @@ void menuBuku() {
 void menuUtama() {
     int pilih;
     do {
-        system("cls");
         cout << "\n=== MENU UTAMA ===\n";
         cout << "1. Menu Anggota\n";
         cout << "2. Menu Buku\n";
