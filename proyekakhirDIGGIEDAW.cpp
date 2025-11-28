@@ -41,6 +41,8 @@ struct Petugas {
 Anggota dataanggota[50];
 Buku databuku[100];
 Petugas datapetugas[5];
+Peminjaman datapeminjaman[100]; 
+Petugas daftarPetugas[100];  
 
 int jumlahanggota = 0;
 int jumlahbuku = 0;
@@ -84,6 +86,34 @@ void loginPetugas() {
         cout << "\nLogin gagal! Username atau password salah.\n";
         cout << "Coba lagi ya.\n\n";
     }
+}
+
+void menuPetugas() {
+    int pilih;
+
+    do {
+        cout << "\n=== MENU PETUGAS ===\n";
+        cout << "1. Login Petugas\n";
+        cout << "2. Tambah Petugas\n";
+        cout << "3. Lihat Petugas\n";
+        cout << "0. Keluar\n";
+        cout << "Pilih: ";
+        cin >> pilih;
+
+        switch (pilih) {
+            case 1:
+                loginPetugas();
+                break;
+            case 2:
+                tambahPetugas();
+                break;
+            case 0:
+                cout << "Keluar...\n";
+                break;
+            default:
+                cout << "Menu tidak valid!\n";
+        }
+    } while (pilih != 0);
 }
 
 // ============ ANGGOTA ============
@@ -330,8 +360,187 @@ void menuBuku() {
         else if (pilih == 2) lihatBuku();
         else if (pilih == 3) cariBuku();
 
-    } while (pilih != 3);
+    } while (pilih != 4);
 }
+
+// ======= MENU PEMINJAMAN =======
+
+string generateIdPeminjaman() {
+    int urut = jumlahpeminjaman + 1;
+    string id = "";
+
+    if (urut < 10) id = "P00000" + to_string(urut);
+    else if (urut < 100) id = "P0000" + to_string(urut);
+    else if (urut < 1000) id = "P000" + to_string(urut);
+    else if (urut < 10000) id = "P00" + to_string(urut);
+    else if (urut < 100000) id = "P0" + to_string(urut);
+    else id = "P" + to_string(urut);
+
+    return id;
+}
+
+string tambah7Hari(string tgl) {
+    int d, m, y;
+    sscanf(tgl.c_str(), "%d-%d-%d", &d, &m, &y);
+
+    d += 7;
+    if (d > 30) {
+        d -= 30;
+        m++;
+    }
+    if (m > 12) {
+        m = 1;
+        y++;
+    }
+
+    char buffer[20];
+    sprintf(buffer, "%02d-%02d-%04d", d, m, y);
+    return string(buffer);
+}
+
+int hitungDenda(string wajib, string aktual) {
+    int d1, m1, y1;
+    int d2, m2, y2;
+
+    sscanf(wajib.c_str(), "%d-%d-%d", &d1, &m1, &y1);
+    sscanf(aktual.c_str(), "%d-%d-%d", &d2, &m2, &y2);
+
+    int hari1 = y1 * 365 + m1 * 30 + d1;
+    int hari2 = y2 * 365 + m2 * 30 + d2;
+
+    int terlambat = hari2 - hari1;
+    if (terlambat <= 7) return 0;
+
+    return (terlambat - 7) * 1000;
+}
+
+void tambahPeminjaman() {
+    cout << "\n=== Tambah Peminjaman ===\n";
+
+    cin.ignore();
+
+    datapeminjaman[jumlahpeminjaman].id_peminjaman = generateIdPeminjaman();
+
+    cout << "ID Anggota : ";
+    getline(cin, datapeminjaman[jumlahpeminjaman].id_anggota);
+
+    cout << "ID Buku    : ";
+    getline(cin, datapeminjaman[jumlahpeminjaman].id_buku);
+
+    cout << "Tanggal Pinjam (dd-mm-yyyy): ";
+    getline(cin, datapeminjaman[jumlahpeminjaman].tanggal_pinjam);
+
+    // AUTO TANGGAL KEMBALI
+    datapeminjaman[jumlahpeminjaman].tanggal_kembali =
+        tambah7Hari(datapeminjaman[jumlahpeminjaman].tanggal_pinjam);
+
+    datapeminjaman[jumlahpeminjaman].status = 0; // belum kembali
+    datapeminjaman[jumlahpeminjaman].denda = 0;
+
+    cout << "Tanggal kembali otomatis: "
+         << datapeminjaman[jumlahpeminjaman].tanggal_kembali << endl;
+
+    jumlahpeminjaman++;
+    cout << "Peminjaman berhasil ditambahkan.\n";
+}
+
+void cariPeminjaman() {
+    cout << "\n=== Cari Peminjaman ===\n";
+
+    cin.ignore();
+    string keyword;
+    cout << "Masukkan ID Peminjaman: ";
+    getline(cin, keyword);
+
+    bool found = false;
+
+    for (int i = 0; i < jumlahpeminjaman; i++) {
+        if (datapeminjaman[i].id_peminjaman == keyword) {
+
+            cout << "\n=== DATA DITEMUKAN ===\n";
+            cout << "ID Peminjaman : " << datapeminjaman[i].id_peminjaman << endl;
+            cout << "ID Anggota    : " << datapeminjaman[i].id_anggota << endl;
+            cout << "ID Buku       : " << datapeminjaman[i].id_buku << endl;
+            cout << "Tanggal Pinjam: " << datapeminjaman[i].tanggal_pinjam << endl;
+            cout << "Tanggal Kembali: " << datapeminjaman[i].tanggal_kembali << endl;
+            cout << "Status        : "
+                 << (datapeminjaman[i].status == 0 ? "Belum kembali" : "Sudah kembali")
+                 << endl;
+            cout << "Denda         : " << datapeminjaman[i].denda << endl;
+
+            found = true;
+        }
+    }
+
+    if (!found) cout << "Data tidak ditemukan.\n";
+}
+
+void listPeminjaman() {
+    cout << "\n=== LIST PEMINJAMAN ===\n";
+
+    if (jumlahpeminjaman == 0) {
+        cout << "Belum ada data.\n";
+        return;
+    }
+
+    for (int i = 0; i < jumlahpeminjaman; i++) {
+        cout << datapeminjaman[i].id_peminjaman
+             << " - " << datapeminjaman[i].id_anggota
+             << " - " << datapeminjaman[i].id_buku << endl;
+    }
+}
+
+void kembalikanBuku() {
+    cout << "\n=== Kembalikan Buku ===\n";
+
+    cin.ignore();
+    string id;
+    cout << "Masukkan ID Peminjaman: ";
+    getline(cin, id);
+
+    for (int i = 0; i < jumlahpeminjaman; i++) {
+        if (datapeminjaman[i].id_peminjaman == id) {
+
+            string tanggalDikembalikan;
+            cout << "Tanggal Dikembalikan (dd-mm-yyyy): ";
+            getline(cin, tanggalDikembalikan);
+
+            datapeminjaman[i].denda =
+                hitungDenda(datapeminjaman[i].tanggal_kembali, tanggalDikembalikan);
+
+            datapeminjaman[i].status = 1;
+
+            cout << "\n=== Buku Dikembalikan ===\n";
+            cout << "Denda: " << datapeminjaman[i].denda << endl;
+
+            return;
+        }
+    }
+
+    cout << "ID tidak ditemukan.\n";
+}
+
+void menuPeminjaman() {
+    int pilih;
+
+    do {
+        cout << "\n=== MENU PEMINJAMAN ===\n";
+        cout << "1. Tambah Peminjaman\n";
+        cout << "2. Lihat Peminjaman\n";
+        cout << "3. Cari Peminjaman\n";
+        cout << "4. Kembalikan Buku\n";
+        cout << "5. Kembali\n";
+        cout << "Pilih: ";
+        cin >> pilih;
+
+        if (pilih == 1) tambahPeminjaman();
+        else if (pilih == 2) listPeminjaman();
+        else if (pilih == 3) cariPeminjaman();
+        else if (pilih == 4) kembalikanBuku();
+
+    } while (pilih != 5);
+}
+
 
 // ============ MENU UTAMA ============
 
@@ -348,6 +557,7 @@ void menuUtama() {
 
         if (pilih == 1) menuAnggota();
         else if (pilih == 2) menuBuku();
+        else if (pilih == 3) menuPeminjaman();
         else if (pilih == 4) break;
     } while (true);
 }
