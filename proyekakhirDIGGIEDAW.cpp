@@ -40,7 +40,7 @@ struct Petugas {
 
 Anggota dataanggota[50];
 Buku databuku[100];
-Petugas datapetugas[5];
+Petugas datapetugas[100];
 Peminjaman datapeminjaman[100]; 
 Petugas daftarPetugas[100];  
 
@@ -56,12 +56,52 @@ void menuBuku();
 
 // ============ PETUGAS ============
 
-void tambahPetugas() {
+string generateIdPetugas() {
+    int urut = jumlahpetugas + 1;
+    string id = to_string(urut);
+
+    // bikin jadi 6 digit (leading zero)
+    while (id.length() < 6) {
+        id = "0" + id;
+    }
+    return id;
+}
+
+void AkunDefault() {
     datapetugas[0].id_petugas = "000001";
     datapetugas[0].username = "admin";
     datapetugas[0].password = "admin123";
-    datapetugas[0].nama = "Petugas Utama";
+    datapetugas[0].nama = "Administrator";
+
     jumlahpetugas = 1;
+}
+
+void tambahPetugas() {
+    system("cls");
+    cout << "\n=== TAMBAH PETUGAS ===\n";
+
+    string user, pass, nama;
+
+    datapetugas[jumlahpetugas].id_petugas = generateIdPetugas();
+
+    cout << "Username     : ";
+    cin >> user;
+
+    cout << "Password     : ";
+    cin >> pass;
+
+    cout << "Nama Petugas : ";
+    cin.ignore();
+    getline(cin, nama);
+
+    datapetugas[jumlahpetugas].username = user;
+    datapetugas[jumlahpetugas].password = pass;
+    datapetugas[jumlahpetugas].nama = nama;
+
+    jumlahpetugas++;
+
+    cout << "\nPetugas berhasil ditambahkan!\n";
+    cout << "ID Petugas: " << datapetugas[jumlahpetugas-1].id_petugas << endl;
 }
 
 void loginPetugas() {
@@ -88,6 +128,24 @@ void loginPetugas() {
     }
 }
 
+void lihatPetugas() {
+    system("cls");
+    cout << "\n=== DATA PETUGAS ===\n";
+
+    if (jumlahpetugas == 0) {
+        cout << "Belum ada data petugas.\n";
+        return;
+    }
+
+    for (int i = 0; i < jumlahpetugas; i++) {
+        cout << "\nPetugas ke-" << i + 1 << endl;
+        cout << "ID Petugas : " << datapetugas[i].id_petugas << endl;
+        cout << "Username   : " << datapetugas[i].username << endl;
+        cout << "Nama       : " << datapetugas[i].nama << endl;
+    }
+}
+
+
 void menuPetugas() {
     int pilih;
 
@@ -106,6 +164,9 @@ void menuPetugas() {
                 break;
             case 2:
                 tambahPetugas();
+                break;
+            case 3:
+                lihatPetugas();
                 break;
             case 0:
                 cout << "Keluar...\n";
@@ -565,8 +626,8 @@ void menuUtama() {
 // ============ MAIN ============
 
 int main() {
-    tambahPetugas();
-    loginPetugas();
+    AkunDefault();
+    menuPetugas();
     menuUtama();
     return 0;
 }
