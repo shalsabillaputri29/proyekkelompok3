@@ -1,20 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <cstdio> // sscanf, sprintf
+#include <cstdio> 
 using namespace std;
-
-/*
-  Format file (opsi B) contohnya:
-  ID: 000001
-  Anggota: A001
-  Buku: BK002
-  Pinjam: 12-11-2025
-  Kembali: 19-11-2025
-  Status: 1
-  Denda: 0
-  ---
-*/
 
 // ========== STRUCT ==========
 struct Anggota {
@@ -114,15 +102,8 @@ void listPeminjaman();
 void kembalikanBuku();
 bool anggotaPunyaPinjamanAktif(const string &id_anggota);
 int findPeminjamanIndexById(const string &id);
-
-// util (simple)
 int hariDalamBulan(int bulan);
-
-// ========== IMPLEMENTASI ==========
-
-// util
 int hariDalamBulan(int bulan) {
-    // tanpa kabisat: Februari = 28
     switch (bulan) {
         case 1: return 31;
         case 2: return 28;
@@ -140,7 +121,6 @@ int hariDalamBulan(int bulan) {
     return 30;
 }
 
-// date helpers (approx same logic as sebelumnya: month days normal, year 365)
 int dateToDays(int d, int m, int y) {
     return y * 365 + m * 30 + d;
 }
@@ -188,8 +168,8 @@ void loadPetugas() {
     while (getline(f,line)) {
         if (line.rfind("ID:",0) == 0) {
             datapetugas[jumlahpetugas].id_petugas = line.substr(4);
-            getline(f,line); datapetugas[jumlahpetugas].username = line.substr(10);
-            getline(f,line); datapetugas[jumlahpetugas].password = line.substr(10);
+            getline(f,line); datapetugas[jumlahpetugas].username = line.substr(line.find(":") + 2);
+            getline(f,line); datapetugas[jumlahpetugas].password = line.substr(line.find(":") + 2);
             getline(f,line); datapetugas[jumlahpetugas].nama = line.substr(6);
             getline(f,line); // ---
             jumlahpetugas++;
@@ -213,8 +193,8 @@ void savePetugas() {
 void AkunDefault() {
     if (jumlahpetugas == 0) {
         datapetugas[0].id_petugas = "000001";
-        datapetugas[0].username = "admin";
-        datapetugas[0].password = "admin123";
+        datapetugas[0].username = "etmin";
+        datapetugas[0].password = "etmin123";
         datapetugas[0].nama = "Administrator";
         jumlahpetugas = 1;
         savePetugas();
@@ -721,6 +701,7 @@ void menuUtama() {
 
 // ========== MAIN ==========
 int main() {
+    system("chcp 65001 >nul");
     loadAll();
     // pastikan ada akun default kalau file kosong
     AkunDefault();
