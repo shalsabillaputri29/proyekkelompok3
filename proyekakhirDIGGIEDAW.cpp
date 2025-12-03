@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <cstdio> 
 using namespace std;
 
 // ========== STRUCT ==========
@@ -28,9 +27,9 @@ struct Peminjaman {
     string id_peminjaman;
     string id_anggota;
     string id_buku;
-    string tanggal_pinjam;   // dd-mm-yyyy
-    string tanggal_kembali;  // dd-mm-yyyy
-    int status;              // 1 = belum kembali, 0 = sudah kembali
+    string tanggal_pinjam;   
+    string tanggal_kembali;  
+    int status;              
     int denda;
 };
 
@@ -52,7 +51,6 @@ int jumlahbuku = 0;
 int jumlahpetugas = 0;
 int jumlahpeminjaman = 0;
 
-// tanggal hari ini (diisi petugas setelah login)
 string currentDate = "";
 
 // ========== PROTOTYPE ==========
@@ -91,7 +89,7 @@ int findBukuIndexById(const string &id);
 
 // Peminjaman
 string generateIdPeminjaman();
-string tambah7Hari(const string &tgl); // dd-mm-yyyy, feb=28
+string tambah7Hari(const string &tgl); 
 int dateToDays(int d, int m, int y);
 int hitungDenda(const string &batas, const string &aktual);
 void loadPeminjaman();
@@ -102,32 +100,24 @@ void listPeminjaman();
 void kembalikanBuku();
 bool anggotaPunyaPinjamanAktif(const string &id_anggota);
 int findPeminjamanIndexById(const string &id);
-int hariDalamBulan(int bulan);
 int hariDalamBulan(int bulan) {
     switch (bulan) {
-        case 1: return 31;
+        case 1: case 3: case 5: case 7: case 8: case 10: case 12: return 31;
+        case 4: case 6: case 9: case 11: return 30;
         case 2: return 28;
-        case 3: return 31;
-        case 4: return 30;
-        case 5: return 31;
-        case 6: return 30;
-        case 7: return 31;
-        case 8: return 31;
-        case 9: return 30;
-        case 10: return 31;
-        case 11: return 30;
-        case 12: return 31;
     }
     return 30;
 }
 
-int dateToDays(int d, int m, int y) {
-    return y * 365 + m * 30 + d;
+void splitTanggal(const string &tgl, int &d, int &m, int &y) {
+    d = stoi(tgl.substr(0,2));
+    m = stoi(tgl.substr(3,2));
+    y = stoi(tgl.substr(6,4));
 }
 
 string tambah7Hari(const string &tgl) {
-    int d, m, y;
-    if (sscanf(tgl.c_str(), "%d-%d-%d", &d, &m, &y) != 3) return tgl;
+    int d,m,y;
+    splitTanggal(tgl,d,m,y);
     d += 7;
     int mdays = hariDalamBulan(m);
     if (d > mdays) {
@@ -135,24 +125,31 @@ string tambah7Hari(const string &tgl) {
         m++;
         if (m > 12) { m = 1; y++; }
     }
-    char buf[16];
-    sprintf(buf, "%02d-%02d-%04d", d, m, y);
-    return string(buf);
+    string dd = (d<10?"0":"") + to_string(d);
+    string mm = (m<10?"0":"") + to_string(m);
+    string yyyy = to_string(y);
+    return dd + "-" + mm + "-" + yyyy;
+}
+
+int dateToDays(int d, int m, int y) {
+    return y*365 + m*30 + d;
 }
 
 int hitungDenda(const string &batas, const string &aktual) {
     int d1,m1,y1,d2,m2,y2;
-    if (sscanf(batas.c_str(), "%d-%d-%d", &d1,&m1,&y1) != 3) return 0;
-    if (sscanf(aktual.c_str(), "%d-%d-%d", &d2,&m2,&y2) != 3) return 0;
+    splitTanggal(batas,d1,m1,y1);
+    splitTanggal(aktual,d2,m2,y2);
+
     int hari1 = dateToDays(d1,m1,y1);
     int hari2 = dateToDays(d2,m2,y2);
     int selisih = hari2 - hari1;
+
     if (selisih <= 0) return 0;
-    if (selisih <= 7) return 0; // bebas denda dalam 7 hari
-    return (selisih - 7) * 1000;
+    if (selisih <= 7) return 0; // bebas denda 7 hari
+    return (selisih - 7) * 1000; // denda per hari = 1000
 }
 
-// ========== PETUGAS ==========
+// ================= PETUGAS =================
 string generateIdPetugas() {
     int urut = jumlahpetugas + 1;
     string id = to_string(urut);
@@ -168,10 +165,10 @@ void loadPetugas() {
     while (getline(f,line)) {
         if (line.rfind("ID:",0) == 0) {
             datapetugas[jumlahpetugas].id_petugas = line.substr(4);
-            getline(f,line); datapetugas[jumlahpetugas].username = line.substr(line.find(":") + 2);
-            getline(f,line); datapetugas[jumlahpetugas].password = line.substr(line.find(":") + 2);
+            getline(f,line); datapetugas[jumlahpetugas].username = line.substr(10);
+            getline(f,line); datapetugas[jumlahpetugas].password = line.substr(10);
             getline(f,line); datapetugas[jumlahpetugas].nama = line.substr(6);
-            getline(f,line); // ---
+            getline(f,line); 
             jumlahpetugas++;
         }
     }
@@ -193,8 +190,8 @@ void savePetugas() {
 void AkunDefault() {
     if (jumlahpetugas == 0) {
         datapetugas[0].id_petugas = "000001";
-        datapetugas[0].username = "etmin";
-        datapetugas[0].password = "etmin123";
+        datapetugas[0].username = "admin";
+        datapetugas[0].password = "admin123";
         datapetugas[0].nama = "Administrator";
         jumlahpetugas = 1;
         savePetugas();
@@ -206,24 +203,28 @@ void tambahPetugas() {
     cout << "✨ TAMBAH PETUGAS ✨\n";
     string user, pass, nama;
     datapetugas[jumlahpetugas].id_petugas = generateIdPetugas();
-    cout << "Username: "; cin >> user;
-    cout << "Password: "; cin >> pass;
-    cin.ignore();
+    
+    cin.ignore(); // clear buffer
+    cout << "Username: "; getline(cin, user);
+    cout << "Password: "; getline(cin, pass);
     cout << "Nama Petugas: "; getline(cin, nama);
+    
     datapetugas[jumlahpetugas].username = user;
     datapetugas[jumlahpetugas].password = pass;
     datapetugas[jumlahpetugas].nama = nama;
     jumlahpetugas++;
     savePetugas();
-    cout << "Sukses. ID: " << datapetugas[jumlahpetugas-1].id_petugas << "\n";
+    cout << "Sukses. ID Petugas: " << datapetugas[jumlahpetugas-1].id_petugas << "\n";
 }
 
 bool loginPetugas() {
     string u,p;
     system("cls");
     cout << "🔐 LOGIN PETUGAS 🔐\n";
-    cout << "Username: "; cin >> u;
-    cout << "Password: "; cin >> p;
+    cin.ignore();
+    cout << "Username: "; getline(cin, u);
+    cout << "Password: "; getline(cin, p);
+
     for (int i=0;i<jumlahpetugas;i++){
         if (datapetugas[i].username == u && datapetugas[i].password == p) {
             cout << "Login berhasil. Halo, " << datapetugas[i].nama << "!\n";
@@ -245,6 +246,7 @@ void lihatPetugas() {
         cout << "-----------------\n";
     }
 }
+
 
 // ========== ANGGOTA ==========
 string generateKodeAnggota(string tahun, string bulan, string tanggal) {
