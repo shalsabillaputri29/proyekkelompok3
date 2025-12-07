@@ -1,0 +1,32 @@
+ID: 000001
+ISBN: 9781401308773
+Judul: Dead Poets Society
+Pengarang: N. H. Kleinbaum
+Penerbit: Disney Hyperion
+Tahun: 2006
+Stok: 2
+---
+ID: 000002
+ISBN: 9786020342733
+Judul: Harry Potter and The Prisoner of Azkaban
+Pengarang: J. K. Rowling
+Penerbit: Gramedia Pusaka Utama
+Tahun: 1999
+Stok: 1
+---
+ID: 000003
+ISBN: 9789799731234
+Judul: Bumi Manusia
+Pengarang: Pramoedya Ananta Toer
+Penerbit: Hasta Mitra
+Tahun: 1980
+Stok: 2
+---
+ID: 000004
+ISBN: 9786025792403
+Judul: Madilog
+Pengarang: Tan Malaka
+Penerbit: IRCiSoD
+Tahun: 1943
+Stok: 1
+---

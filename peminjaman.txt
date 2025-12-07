@@ -1,0 +1,56 @@
+ID: 000001
+Anggota: 20090629001
+Buku: 000003
+Pinjam: 07-12-2025
+Kembali: 14-12-2025
+Status: 0
+Denda: 0
+---
+ID: 000002
+Anggota: 20090629001
+Buku: 000001
+Pinjam: 07-12-2025
+Kembali: 14-12-2025
+Status: 0
+Denda: 0
+---
+ID: 000003
+Anggota: 20090629001
+Buku: 000004
+Pinjam: 07122025
+Kembali: 14-22-25
+Status: 0
+Denda: 21000
+---
+ID: 000004
+Anggota: 20090629001
+Buku: 000002
+Pinjam: 07122025
+Kembali: 14-22-25
+Status: 0
+Denda: 0
+---
+ID: 000005
+Anggota: 20090629001
+Buku: 000001
+Pinjam: 07-12-2025
+Kembali: 14-12-2025
+Status: 0
+Denda: 0
+---
+ID: 000006
+Anggota: 20090629001
+Buku: 000003
+Pinjam: 07-12-2025
+Kembali: 14-12-2025
+Status: 0
+Denda: 0
+---
+ID: 000007
+Anggota: 20090629001
+Buku: 000004
+Pinjam: 07-12-2025
+Kembali: 14-12-2025
+Status: 0
+Denda: 3000
+---

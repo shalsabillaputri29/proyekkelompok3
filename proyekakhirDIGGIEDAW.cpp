@@ -27,9 +27,9 @@ struct Peminjaman {
     string id_peminjaman;
     string id_anggota;
     string id_buku;
-    string tanggal_pinjam;   
-    string tanggal_kembali;  
-    int status;              
+    string tanggal_pinjam;
+    string tanggal_kembali;
+    int status;
     int denda;
 };
 
@@ -78,6 +78,7 @@ void loadAnggota();
 void saveAnggota();
 void tambahAnggota();
 void lihatAnggota();
+void cariAnggotaByNama();
 
 // Buku
 string generateIdBuku();
@@ -86,11 +87,13 @@ void saveBuku();
 void tambahBuku();
 void lihatBuku();
 int findBukuIndexById(const string &id);
+void cariBukuByJudul();
+void cariBuku();
+void hapusStokBuku(); // <-- prototype baru
 
 // Peminjaman
 string generateIdPeminjaman();
-string tambah7Hari(const string &tgl); 
-int dateToDays(int d, int m, int y);
+string tambah7Hari(const string &tgl);
 int hitungDenda(const string &batas, const string &aktual);
 void loadPeminjaman();
 void savePeminjaman();
@@ -100,6 +103,10 @@ void listPeminjaman();
 void kembalikanBuku();
 bool anggotaPunyaPinjamanAktif(const string &id_anggota);
 int findPeminjamanIndexById(const string &id);
+
+// ========== FUNGSI TANGGAL + DENDA (VERSI STABIL) ==========
+
+// jumlah hari tiap bulan (tanpa kabisat, cukup untuk sistem perpustakaan)
 int hariDalamBulan(int bulan) {
     switch (bulan) {
         case 1: case 3: case 5: case 7: case 8: case 10: case 12: return 31;
@@ -109,44 +116,70 @@ int hariDalamBulan(int bulan) {
     return 30;
 }
 
+// pisahkan string "dd-mm-yyyy" menjadi integer
 void splitTanggal(const string &tgl, int &d, int &m, int &y) {
     d = stoi(tgl.substr(0,2));
     m = stoi(tgl.substr(3,2));
     y = stoi(tgl.substr(6,4));
 }
 
+// tambah 7 hari dari tanggal pinjam → tanggal batas
 string tambah7Hari(const string &tgl) {
-    int d,m,y;
-    splitTanggal(tgl,d,m,y);
+    int d, m, y;
+    splitTanggal(tgl, d, m, y);
+
     d += 7;
     int mdays = hariDalamBulan(m);
-    if (d > mdays) {
+
+    // jika lewat bulan, ulangi sampai benar
+    while (d > mdays) {
         d -= mdays;
         m++;
-        if (m > 12) { m = 1; y++; }
+        if (m > 12) {
+            m = 1;
+            y++;
+        }
+        mdays = hariDalamBulan(m);
     }
-    string dd = (d<10?"0":"") + to_string(d);
-    string mm = (m<10?"0":"") + to_string(m);
+
+    string dd = (d < 10 ? "0" : "") + to_string(d);
+    string mm = (m < 10 ? "0" : "") + to_string(m);
     string yyyy = to_string(y);
     return dd + "-" + mm + "-" + yyyy;
 }
 
-int dateToDays(int d, int m, int y) {
-    return y*365 + m*30 + d;
+// konversi tanggal ke hitungan hari total (sederhana, tanpa leap year)
+int tanggalKeHari(int d, int m, int y) {
+    int total = y * 365 + d;
+    for (int i = 1; i < m; ++i) total += hariDalamBulan(i);
+    return total;
 }
 
+// hitung denda
+// aturan: tanggal_kembali adalah due date (pinjam + 7 hari).
+// jika actual > due, denda = (actual - due) * 1000 per hari.
+// tidak ada toleransi ekstra.
 int hitungDenda(const string &batas, const string &aktual) {
-    int d1,m1,y1,d2,m2,y2;
-    splitTanggal(batas,d1,m1,y1);
-    splitTanggal(aktual,d2,m2,y2);
+    int d1,m1,y1;
+    int d2,m2,y2;
+    splitTanggal(batas, d1, m1, y1);
+    splitTanggal(aktual, d2, m2, y2);
 
-    int hari1 = dateToDays(d1,m1,y1);
-    int hari2 = dateToDays(d2,m2,y2);
-    int selisih = hari2 - hari1;
+    int hariBatas = tanggalKeHari(d1,m1,y1);
+    int hariAktual = tanggalKeHari(d2,m2,y2);
+    int selisih = hariAktual - hariBatas;
 
     if (selisih <= 0) return 0;
-    if (selisih <= 7) return 0; // bebas denda 7 hari
-    return (selisih - 7) * 1000; // denda per hari = 1000
+    return selisih * 1000; // denda per hari = 1000
+}
+
+// lowercase manual tanpa library tambahan
+string lowerManual(string s) {
+    for (size_t i = 0; i < s.length(); ++i) {
+        char c = s[i];
+        if (c >= 'A' && c <= 'Z') s[i] = c + ('a' - 'A');
+    }
+    return s;
 }
 
 // ================= PETUGAS =================
@@ -168,7 +201,7 @@ void loadPetugas() {
             getline(f,line); datapetugas[jumlahpetugas].username = line.substr(10);
             getline(f,line); datapetugas[jumlahpetugas].password = line.substr(10);
             getline(f,line); datapetugas[jumlahpetugas].nama = line.substr(6);
-            getline(f,line); 
+            getline(f,line);
             jumlahpetugas++;
         }
     }
@@ -203,12 +236,12 @@ void tambahPetugas() {
     cout << "✨ TAMBAH PETUGAS ✨\n";
     string user, pass, nama;
     datapetugas[jumlahpetugas].id_petugas = generateIdPetugas();
-    
-    cin.ignore(); // clear buffer
+
+    cin.ignore();
     cout << "Username: "; getline(cin, user);
     cout << "Password: "; getline(cin, pass);
     cout << "Nama Petugas: "; getline(cin, nama);
-    
+
     datapetugas[jumlahpetugas].username = user;
     datapetugas[jumlahpetugas].password = pass;
     datapetugas[jumlahpetugas].nama = nama;
@@ -332,6 +365,39 @@ void lihatAnggota() {
     }
 }
 
+void cariAnggotaByNama() {
+    system("cls");
+    cout << "🔎 CARI ANGGOTA BERDASARKAN NAMA 🔎\n";
+    cin.ignore();
+
+    string key;
+    cout << "Masukkan nama / bagian nama: ";
+    getline(cin, key);
+
+    bool found = false;
+
+    string keyLower = lowerManual(key);
+
+    for (int i = 0; i < jumlahanggota; i++) {
+        string namaLower = lowerManual(dataanggota[i].nama);
+
+        if (namaLower.find(keyLower) != string::npos) {
+            cout << "Nama   : " << dataanggota[i].nama << "\n";
+            cout << "ID     : " << dataanggota[i].id_anggota << "\n";
+            cout << "Alamat : " << dataanggota[i].alamat << "\n";
+            cout << "Email  : " << dataanggota[i].email << "\n";
+            cout << "Status : "
+                 << (dataanggota[i].status == 1 ? "Aktif" : "Nonaktif")
+                 << "\n";
+            cout << "------------------------------\n";
+            found = true;
+        }
+    }
+
+    if (!found)
+        cout << "Tidak ada anggota dengan nama tersebut.\n";
+}
+
 // ========== BUKU ==========
 string generateIdBuku() {
     int urut = jumlahbuku + 1;
@@ -417,6 +483,80 @@ void lihatBuku() {
 int findBukuIndexById(const string &id) {
     for (int i=0;i<jumlahbuku;i++) if (databuku[i].id_buku == id) return i;
     return -1;
+}
+
+void cariBuku() {
+    system("cls");
+    cout << "🔎 CARI BUKU BERDASARKAN JUDUL 🔎\n";
+    cin.ignore();
+
+    string key;
+    cout << "Masukkan judul / bagian judul: ";
+    getline(cin, key);
+
+    bool found = false;
+    string keyLower = lowerManual(key);
+
+    for (int i = 0; i < jumlahbuku; i++) {
+        string judulLower = lowerManual(databuku[i].judul);
+        if (judulLower.find(keyLower) != string::npos) {
+            cout << "ID Buku : " << databuku[i].id_buku << "\n";
+            cout << "Judul   : " << databuku[i].judul << "\n";
+            cout << "Pengarang: " << databuku[i].pengarang << "\n";
+            cout << "Penerbit: " << databuku[i].penerbit << "\n";
+            cout << "Tahun   : " << databuku[i].tahun_terbit << "\n";
+            cout << "Stok    : " << databuku[i].stok << "\n";
+            cout << "------------------------------\n";
+            found = true;
+        }
+    }
+
+    if (!found) cout << "Tidak ada buku dengan judul tersebut.\n";
+}
+
+// ========== FUNGSI BARU: HAPUS STOK BUKU ==========
+void hapusStokBuku() {
+    system("cls");
+    cout << "===== HAPUS STOK BUKU =====\n";
+
+    cin.ignore();
+    string id;
+    cout << "Masukkan ID Buku: ";
+    getline(cin, id);
+
+    int index = findBukuIndexById(id);
+    if (index == -1) {
+        cout << "Buku tidak ditemukan!\n";
+        return;
+    }
+
+    cout << "Judul: " << databuku[index].judul << "\n";
+    cout << "Stok saat ini: " << databuku[index].stok << "\n";
+
+    int hapus;
+    cout << "Masukkan jumlah stok yang ingin dihapus: ";
+    if (!(cin >> hapus)) {
+        cout << "Input tidak valid.\n";
+        // clear cin state
+        cin.clear();
+        string dummy; getline(cin, dummy);
+        return;
+    }
+
+    if (hapus <= 0) {
+        cout << "Jumlah tidak valid!\n";
+        return;
+    }
+
+    if (hapus > databuku[index].stok) {
+        cout << "❌ Tidak bisa menghapus lebih dari stok yang ada!\n";
+        return;
+    }
+
+    databuku[index].stok -= hapus;
+    saveBuku();
+
+    cout << "✔️ Stok berhasil dikurangi. Stok baru: " << databuku[index].stok << "\n";
 }
 
 // ========== PEMINJAMAN ==========
@@ -511,14 +651,13 @@ void tambahPeminjaman() {
     databuku[idx].stok--;
     saveBuku();
 
-    // buat record peminjaman
     Peminjaman p;
     p.id_peminjaman = generateIdPeminjaman();
     p.id_anggota = idanggota;
     p.id_buku = idbuku;
-    p.tanggal_pinjam = currentDate; // otomatis
+    p.tanggal_pinjam = currentDate;
     p.tanggal_kembali = tambah7Hari(p.tanggal_pinjam);
-    p.status = 1; // belum kembali
+    p.status = 1;
     p.denda = 0;
 
     datapeminjaman[jumlahpeminjaman] = p;
@@ -612,7 +751,6 @@ void saveAll() {
 }
 
 // ========== MENUS ==========
-
 void menuPetugas() {
     while (true) {
         system("cls");
@@ -645,22 +783,27 @@ void menuPetugas() {
 void menuAnggota() {
     while (true) {
         system("cls");
-        cout << "1. Tambah Anggota\n2. Lihat Anggota\n0. Kembali\nPilih: ";
+        cout << "1. Tambah Anggota\n2. Lihat Anggota\n3. Cari Anggota\n0. Kembali\nPilih: ";
         int p; cin >> p;
         if (p==1) tambahAnggota();
         else if (p==2) { lihatAnggota(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
+        else if (p==3) { cariAnggotaByNama(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
         else if (p==0) return;
+        else { cout << "Pilihan tidak valid.\n"; }
     }
 }
 
 void menuBuku() {
     while (true) {
         system("cls");
-        cout << "1. Tambah Buku\n2. Lihat Buku\n0. Kembali\nPilih: ";
+        cout << "1. Tambah Buku\n2. Lihat Buku\n3. Cari Buku\n4. Hapus Stok Buku\n0. Kembali\nPilih: ";
         int p; cin >> p;
         if (p==1) tambahBuku();
         else if (p==2) { lihatBuku(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
+        else if (p==3) { cariBuku(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
+        else if (p==4) { hapusStokBuku(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
         else if (p==0) return;
+        else { cout << "Pilihan tidak valid.\n"; }
     }
 }
 
@@ -674,6 +817,7 @@ void menuPeminjaman() {
         else if (p==3) { cariPeminjaman(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
         else if (p==4) { kembalikanBuku(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
         else if (p==0) return;
+        else { cout << "Pilihan tidak valid.\n"; }
     }
 }
 
@@ -705,7 +849,7 @@ void menuUtama() {
 int main() {
     system("chcp 65001 >nul");
     loadAll();
-    // pastikan ada akun default kalau file kosong
+    // memastikan ada akun default kalau file kosong
     AkunDefault();
 
     // login wajib sebelum dashboard
@@ -715,7 +859,7 @@ int main() {
         int p; cin >> p;
         if (p==1) {
             menuPetugas();
-            if (currentDate != "") break; // jika login sukses & tanggal di-set, lanjut
+            if (currentDate != "") break; // jika login sukses & tanggal disetting, program berlanjut
         } else {
             cout << "Keluar...\n";
             return 0;
