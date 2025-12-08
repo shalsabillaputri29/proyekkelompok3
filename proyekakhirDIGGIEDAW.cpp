@@ -106,7 +106,6 @@ int findPeminjamanIndexById(const string &id);
 
 // ========== FUNGSI TANGGAL + DENDA (VERSI STABIL) ==========
 
-// jumlah hari tiap bulan (tanpa kabisat, cukup untuk sistem perpustakaan)
 int hariDalamBulan(int bulan) {
     switch (bulan) {
         case 1: case 3: case 5: case 7: case 8: case 10: case 12: return 31;
@@ -148,7 +147,7 @@ string tambah7Hari(const string &tgl) {
     return dd + "-" + mm + "-" + yyyy;
 }
 
-// konversi tanggal ke hitungan hari total (sederhana, tanpa leap year)
+// konversi tanggal ke hitungan hari total 
 int tanggalKeHari(int d, int m, int y) {
     int total = y * 365 + d;
     for (int i = 1; i < m; ++i) total += hariDalamBulan(i);
@@ -156,9 +155,6 @@ int tanggalKeHari(int d, int m, int y) {
 }
 
 // hitung denda
-// aturan: tanggal_kembali adalah due date (pinjam + 7 hari).
-// jika actual > due, denda = (actual - due) * 1000 per hari.
-// tidak ada toleransi ekstra.
 int hitungDenda(const string &batas, const string &aktual) {
     int d1,m1,y1;
     int d2,m2,y2;
@@ -173,7 +169,7 @@ int hitungDenda(const string &batas, const string &aktual) {
     return selisih * 1000; // denda per hari = 1000
 }
 
-// lowercase manual tanpa library tambahan
+// lowercase manual 
 string lowerManual(string s) {
     for (size_t i = 0; i < s.length(); ++i) {
         char c = s[i];
@@ -238,9 +234,12 @@ void tambahPetugas() {
     datapetugas[jumlahpetugas].id_petugas = generateIdPetugas();
 
     cin.ignore();
-    cout << "Username: "; getline(cin, user);
-    cout << "Password: "; getline(cin, pass);
-    cout << "Nama Petugas: "; getline(cin, nama);
+    cout << "Username: "; 
+    getline(cin, user);
+    cout << "Password: "; 
+    getline(cin, pass);
+    cout << "Nama Petugas: "; 
+    getline(cin, nama);
 
     datapetugas[jumlahpetugas].username = user;
     datapetugas[jumlahpetugas].password = pass;
@@ -255,8 +254,10 @@ bool loginPetugas() {
     system("cls");
     cout << "🔐 LOGIN PETUGAS 🔐\n";
     cin.ignore();
-    cout << "Username: "; getline(cin, u);
-    cout << "Password: "; getline(cin, p);
+    cout << "Username: "; 
+    getline(cin, u);
+    cout << "Password: "; 
+    getline(cin, p);
 
     for (int i=0;i<jumlahpetugas;i++){
         if (datapetugas[i].username == u && datapetugas[i].password == p) {
@@ -335,9 +336,12 @@ void tambahAnggota() {
     cout << "🆕 TAMBAH ANGGOTA 🆕\n";
     Anggota a;
     cin.ignore();
-    cout << "Nama: "; getline(cin, a.nama);
-    cout << "Alamat: "; getline(cin, a.alamat);
-    cout << "Email: "; getline(cin, a.email);
+    cout << "Nama: "; 
+    getline(cin, a.nama);
+    cout << "Alamat: "; 
+    getline(cin, a.alamat);
+    cout << "Email: "; 
+    getline(cin, a.email);
     string tahun,bulan,tanggal;
     cout << "Tahun Lahir (YYYY): "; cin >> tahun;
     cout << "Bulan Lahir (MM): "; cin >> bulan;
@@ -514,7 +518,6 @@ void cariBuku() {
     if (!found) cout << "Tidak ada buku dengan judul tersebut.\n";
 }
 
-// ========== FUNGSI BARU: HAPUS STOK BUKU ==========
 void hapusStokBuku() {
     system("cls");
     cout << "===== HAPUS STOK BUKU =====\n";
@@ -616,7 +619,9 @@ bool anggotaPunyaPinjamanAktif(const string &id_anggota) {
 }
 
 int findPeminjamanIndexById(const string &id) {
-    for (int i=0;i<jumlahpeminjaman;i++) if (datapeminjaman[i].id_peminjaman == id) return i;
+    for (int i=0;i<jumlahpeminjaman;i++) 
+    if (datapeminjaman[i].id_peminjaman == id) 
+    return i;
     return -1;
 }
 
@@ -631,10 +636,16 @@ void tambahPeminjaman() {
     string idanggota, idbuku;
     cin.ignore();
     cout << "ID Anggota: "; getline(cin, idanggota);
-    // cek anggota ada?
+    // cek anggota 
     bool adaAng = false;
-    for (int i=0;i<jumlahanggota;i++) if (dataanggota[i].id_anggota == idanggota) { adaAng=true; break; }
-    if (!adaAng) { cout << "Anggota tidak ditemukan.\n"; return; }
+    for (int i=0;i<jumlahanggota;i++) 
+    if (dataanggota[i].id_anggota == idanggota) { 
+        adaAng=true; 
+        break; 
+    }
+    if (!adaAng) { 
+        cout << "Anggota tidak ditemukan.\n"; 
+        return; }
 
     // cek apakah anggota masih punya pinjaman aktif
     if (anggotaPunyaPinjamanAktif(idanggota)) {
@@ -644,8 +655,14 @@ void tambahPeminjaman() {
 
     cout << "ID Buku: "; getline(cin, idbuku);
     int idx = findBukuIndexById(idbuku);
-    if (idx == -1) { cout << "Buku tidak ditemukan.\n"; return; }
-    if (databuku[idx].stok <= 0) { cout << "Stok buku habis.\n"; return; }
+    if (idx == -1) { 
+        cout << "Buku tidak ditemukan.\n"; 
+        return; 
+    }
+    if (databuku[idx].stok <= 0) { 
+        cout << "Stok buku habis.\n"; 
+        return; 
+    }
 
     // kurangi stok
     databuku[idx].stok--;
@@ -712,13 +729,21 @@ void kembalikanBuku() {
     cout << "📤 PENGEMBALIAN BUKU 📤\n";
     cin.ignore();
     string id;
-    cout << "Masukkan ID Peminjaman: "; getline(cin, id);
+    cout << "Masukkan ID Peminjaman: "; 
+    getline(cin, id);
     int idx = findPeminjamanIndexById(id);
-    if (idx == -1) { cout << "ID tidak ditemukan.\n"; return; }
-    if (datapeminjaman[idx].status == 0) { cout << "Buku sudah dikembalikan sebelumnya.\n"; return; }
+    if (idx == -1) { 
+        cout << "ID tidak ditemukan.\n"; 
+        return; 
+    }
+    if (datapeminjaman[idx].status == 0) { 
+        cout << "Buku sudah dikembalikan sebelumnya.\n"; 
+        return; 
+    }
 
     string tglk;
-    cout << "Tanggal Dikembalikan (dd-mm-yyyy): "; getline(cin, tglk);
+    cout << "Tanggal Dikembalikan (dd-mm-yyyy): "; 
+    getline(cin, tglk);
 
     int denda = hitungDenda(datapeminjaman[idx].tanggal_kembali, tglk);
     datapeminjaman[idx].denda = denda;
@@ -750,7 +775,7 @@ void saveAll() {
     savePeminjaman();
 }
 
-// ========== MENUS ==========
+// ========== MENU ==========
 void menuPetugas() {
     while (true) {
         system("cls");
@@ -773,10 +798,21 @@ void menuPetugas() {
                 cout << "Tekan enter untuk kembali..."; cin.ignore(); cin.get();
             }
         } else if (p==2) tambahPetugas();
-        else if (p==3) { lihatPetugas(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
-        else if (p==4) { cin.ignore(); cout << "Masukkan tanggal hari ini (dd-mm-yyyy) : "; getline(cin, currentDate); }
+        else if (p==3) { 
+            lihatPetugas(); 
+            cout << "Tekan enter..."; 
+            cin.ignore(); 
+            cin.get(); 
+        }
+        else if (p==4) { 
+            cin.ignore(); 
+            cout << "Masukkan tanggal hari ini (dd-mm-yyyy) : "; 
+            getline(cin, currentDate); 
+        }
         else if (p==0) return;
-        else { cout << "Pilihan tidak valid.\n"; }
+        else { 
+            cout << "Pilihan tidak valid.\n"; 
+        }
     }
 }
 
@@ -786,10 +822,22 @@ void menuAnggota() {
         cout << "1. Tambah Anggota\n2. Lihat Anggota\n3. Cari Anggota\n0. Kembali\nPilih: ";
         int p; cin >> p;
         if (p==1) tambahAnggota();
-        else if (p==2) { lihatAnggota(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
-        else if (p==3) { cariAnggotaByNama(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
+        else if (p==2) { 
+            lihatAnggota(); 
+            cout << "Tekan enter..."; 
+            cin.ignore(); 
+            cin.get(); 
+        }
+        else if (p==3) { 
+            cariAnggotaByNama(); 
+            cout << "Tekan enter..."; 
+            cin.ignore(); 
+            cin.get(); 
+        }
         else if (p==0) return;
-        else { cout << "Pilihan tidak valid.\n"; }
+        else { 
+            cout << "Pilihan tidak valid.\n"; 
+        }
     }
 }
 
@@ -799,11 +847,28 @@ void menuBuku() {
         cout << "1. Tambah Buku\n2. Lihat Buku\n3. Cari Buku\n4. Hapus Stok Buku\n0. Kembali\nPilih: ";
         int p; cin >> p;
         if (p==1) tambahBuku();
-        else if (p==2) { lihatBuku(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
-        else if (p==3) { cariBuku(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
-        else if (p==4) { hapusStokBuku(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
+        else if (p==2) { 
+            lihatBuku(); 
+            cout << "Tekan enter..."; 
+            cin.ignore(); 
+            cin.get(); 
+        }
+        else if (p==3) { 
+            cariBuku(); 
+            cout << "Tekan enter..."; 
+            cin.ignore(); 
+            cin.get(); 
+        }
+        else if (p==4) { 
+            hapusStokBuku(); 
+            cout << "Tekan enter..."; 
+            cin.ignore(); 
+            cin.get(); 
+        }
         else if (p==0) return;
-        else { cout << "Pilihan tidak valid.\n"; }
+        else { 
+            cout << "Pilihan tidak valid.\n"; 
+        }
     }
 }
 
@@ -812,12 +877,34 @@ void menuPeminjaman() {
         system("cls");
         cout << "1. Pinjam Buku\n2. List Peminjaman\n3. Cari Peminjaman\n4. Kembalikan Buku\n0. Kembali\nPilih: ";
         int p; cin >> p;
-        if (p==1) { tambahPeminjaman(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
-        else if (p==2) { listPeminjaman(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
-        else if (p==3) { cariPeminjaman(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
-        else if (p==4) { kembalikanBuku(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
+        if (p==1) { 
+            tambahPeminjaman(); 
+            cout << "Tekan enter..."; 
+            cin.ignore(); 
+            cin.get(); 
+        }
+        else if (p==2) { 
+            listPeminjaman(); 
+            cout << "Tekan enter..."; 
+            cin.ignore(); 
+            cin.get(); 
+        }
+        else if (p==3) {
+            cariPeminjaman(); 
+            cout << "Tekan enter..."; 
+            cin.ignore(); 
+            cin.get(); 
+        }
+        else if (p==4) { 
+            kembalikanBuku(); 
+            cout << "Tekan enter..."; 
+            cin.ignore(); 
+            cin.get(); 
+        }
         else if (p==0) return;
-        else { cout << "Pilihan tidak valid.\n"; }
+        else { 
+            cout << "Pilihan tidak valid.\n"; 
+        }
     }
 }
 
@@ -838,10 +925,23 @@ void menuUtama() {
         else if (p==2) menuAnggota();
         else if (p==3) menuBuku();
         else if (p==4) menuPeminjaman();
-        else if (p==5) { kembalikanBuku(); cout << "Tekan enter..."; cin.ignore(); cin.get(); }
-        else if (p==6) { saveAll(); cout << "Semua data disimpan.\n"; cout << "Tekan enter..."; cin.ignore(); cin.get(); }
-        else if (p==7) { saveAll(); break; }
-        else { cout << "Pilihan tidak valid.\n"; }
+        else if (p==5) { 
+            kembalikanBuku(); 
+            cout << "Tekan enter..."; 
+            cin.ignore(); 
+            cin.get(); }
+        else if (p==6) { 
+            saveAll(); 
+            cout << "Semua data disimpan.\n"; 
+            cout << "Tekan enter..."; 
+            cin.ignore(); cin.get(); 
+        }
+        else if (p==7) { 
+            saveAll(); 
+            break; 
+        }
+        else { 
+            cout << "Pilihan tidak valid.\n"; }
     }
 }
 
