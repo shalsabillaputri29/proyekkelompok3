@@ -89,7 +89,7 @@ void lihatBuku();
 int findBukuIndexById(const string &id);
 void cariBukuByJudul();
 void cariBuku();
-void hapusStokBuku(); // <-- prototype baru
+void hapusStokBuku();
 
 // Peminjaman
 string generateIdPeminjaman();
@@ -106,29 +106,37 @@ int findPeminjamanIndexById(const string &id);
 
 // ========== FUNGSI TANGGAL + DENDA (VERSI STABIL) ==========
 
-int hariDalamBulan(int bulan) {
+bool isKabisat(int tahun) {
+    return (tahun % 400 == 0) || (tahun % 4 == 0 && tahun % 100 != 0);
+}
+
+int hariDalamBulan(int bulan, int tahun) {
     switch (bulan) {
-        case 1: case 3: case 5: case 7: case 8: case 10: case 12: return 31;
-        case 4: case 6: case 9: case 11: return 30;
-        case 2: return 28;
+        case 1: case 3: case 5: case 7: case 8: case 10: case 12:
+            return 31;
+        case 4: case 6: case 9: case 11:
+            return 30;
+        case 2:
+            return isKabisat(tahun) ? 29 : 28;
     }
     return 30;
 }
 
-// pisahkan string "dd-mm-yyyy" menjadi integer
+
+// memisahkan string "dd-mm-yyyy" menjadi integer
 void splitTanggal(const string &tgl, int &d, int &m, int &y) {
     d = stoi(tgl.substr(0,2));
     m = stoi(tgl.substr(3,2));
     y = stoi(tgl.substr(6,4));
 }
 
-// tambah 7 hari dari tanggal pinjam → tanggal batas
+// tambah 7 hari dari tanggal pinjam
 string tambah7Hari(const string &tgl) {
     int d, m, y;
     splitTanggal(tgl, d, m, y);
 
     d += 7;
-    int mdays = hariDalamBulan(m);
+    int mdays = hariDalamBulan(m,y);
 
     // jika lewat bulan, ulangi sampai benar
     while (d > mdays) {
@@ -138,7 +146,7 @@ string tambah7Hari(const string &tgl) {
             m = 1;
             y++;
         }
-        mdays = hariDalamBulan(m);
+        mdays = hariDalamBulan(m,y);
     }
 
     string dd = (d < 10 ? "0" : "") + to_string(d);
@@ -150,7 +158,7 @@ string tambah7Hari(const string &tgl) {
 // konversi tanggal ke hitungan hari total 
 int tanggalKeHari(int d, int m, int y) {
     int total = y * 365 + d;
-    for (int i = 1; i < m; ++i) total += hariDalamBulan(i);
+    for (int i = 1; i < m; ++i) total += hariDalamBulan(i,y);
     return total;
 }
 
@@ -334,24 +342,68 @@ void saveAnggota() {
 void tambahAnggota() {
     system("cls");
     cout << "🆕 TAMBAH ANGGOTA 🆕\n";
+
     Anggota a;
     cin.ignore();
+
     cout << "Nama: "; 
     getline(cin, a.nama);
     cout << "Alamat: "; 
     getline(cin, a.alamat);
     cout << "Email: "; 
     getline(cin, a.email);
-    string tahun,bulan,tanggal;
-    cout << "Tahun Lahir (YYYY): "; cin >> tahun;
-    cout << "Bulan Lahir (MM): "; cin >> bulan;
-    cout << "Tanggal Lahir (DD): "; cin >> tanggal;
-    a.id_anggota = generateKodeAnggota(tahun,bulan,tanggal);
+
+    // ===== Input tanggal lahir dengan validasi kabisat =====
+    int tglInt, blnInt, thnInt;
+    while (true) {
+        string tahunStr, bulanStr, tanggalStr;
+
+        cout << "Tahun Lahir (YYYY): ";
+        getline(cin, tahunStr);
+        try { thnInt = stoi(tahunStr); }
+        catch (...) { cout << "❌ Input tidak valid!\n"; continue; }
+
+        cout << "Bulan Lahir (MM): ";
+        getline(cin, bulanStr);
+        try { blnInt = stoi(bulanStr); }
+        catch (...) { cout << "❌ Input tidak valid!\n"; continue; }
+        if (blnInt < 1 || blnInt > 12) { cout << "❌ Bulan harus 1–12!\n"; continue; }
+
+        cout << "Tanggal Lahir (DD): ";
+        getline(cin, tanggalStr);
+        try { tglInt = stoi(tanggalStr); }
+        catch (...) { cout << "❌ Input tidak valid!\n"; continue; }
+
+        // cek jumlah hari maksimal per bulan
+        int maxHari;
+        switch (blnInt) {
+            case 1: case 3: case 5: case 7: case 8: case 10: case 12: maxHari = 31; break;
+            case 4: case 6: case 9: case 11: maxHari = 30; break;
+            case 2: maxHari = ((thnInt % 400 == 0) || (thnInt % 4 == 0 && thnInt % 100 != 0)) ? 29 : 28; break;
+            default: maxHari = 30; 
+        }
+
+        if (tglInt < 1 || tglInt > maxHari) {
+            cout << "❌ Tanggal tidak valid untuk bulan tersebut! Masukkan 1–" << maxHari << ".\n";
+            continue;
+        }
+
+        break; // valid input
+    }
+
+    // ubah jadi string 2 digit
+    string tahun = to_string(thnInt);
+    string bulan = (blnInt < 10 ? "0" : "") + to_string(blnInt);
+    string tanggal = (tglInt < 10 ? "0" : "") + to_string(tglInt);
+
+    a.id_anggota = generateKodeAnggota(tahun, bulan, tanggal);
     a.kode_anggota = a.id_anggota;
     a.status = 1;
+
     dataanggota[jumlahanggota] = a;
     jumlahanggota++;
     saveAnggota();
+
     cout << "Anggota terdaftar. Kode: " << a.kode_anggota << "\n";
 }
 
@@ -690,7 +742,8 @@ void cariPeminjaman() {
     cout << "🔎 CARI PEMINJAMAN 🔎\n";
     cin.ignore();
     string key;
-    cout << "Masukkan ID Peminjaman: "; getline(cin, key);
+    cout << "Masukkan ID Peminjaman: "; 
+    getline(cin, key);
     bool found = false;
     for (int i=0;i<jumlahpeminjaman;i++){
         if (datapeminjaman[i].id_peminjaman == key) {

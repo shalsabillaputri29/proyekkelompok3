@@ -5,3 +5,66 @@ Alamat: gondang
 Email: shalsabilla@gmail.com
 Status: 1
 ---
+ID: 20090620001
+Kode: 20090620001
+Nama: putri
+Alamat: kediri
+Email: putri@gmail
+Status: 1
+---
+ID: 20091232001
+Kode: 20091232001
+Nama: wildan
+Alamat: pagerwojo
+Email: wildan@gmail
+Status: 1
+---
+ID: 20091213001
+Kode: 20091213001
+Nama: wildan
+Alamat: sendang
+Email: wildan@gmail
+Status: 1
+---
+ID: 20091229001
+Kode: 20091229001
+Nama: wildan
+Alamat: sendang
+Email: widan@gmIL
+Status: 1
+---
+ID: 20091212001
+Kode: 20091212001
+Nama: wildan
+Alamat: sendang
+Email: wildan@gmail.com
+Status: 1
+---
+ID: 2009230001
+Kode: 2009230001
+Nama: shalsa
+Alamat: tiudan
+Email: shalsa
+Status: 1
+---
+ID: 2009230001
+Kode: 2009230001
+Nama: shalsa
+Alamat: tiudan
+Email: shalsa@gmail.com
+Status: 1
+---
+ID: 20090230001
+Kode: 20090230001
+Nama: shalsa
+Alamat: t
+Email: s
+Status: 1
+---
+ID: 20090230002
+Kode: 20090230002
+Nama: shalsa
+Alamat: t
+Email: r
+Status: 1
+---
